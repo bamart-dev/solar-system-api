@@ -8,12 +8,6 @@ class Planet(db.Model):
     description: Mapped[str]
     atmosphere: Mapped[str]
 
-# class Planet:
-#     def __init__(self, id, name, description, atmosphere):
-#         self.id = id
-#         self.name = name
-#         self.description = description
-#         self.atmosphere = atmosphere
 
 # planets = [
 #     Planet(1, "Cat Head Planet", "cat head shaped planet with large red spots", "cat's bathhouse cafe"),
