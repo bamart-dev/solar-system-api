@@ -95,7 +95,7 @@ def validate_planet(planet_id):
     try:
         planet_id = int(planet_id)
     except:
-        message = {"mesage": f"planet ({planet_id}) is invalid"}
+        message = {"message": f"planet ({planet_id}) is invalid"}
         abort(make_response(message, 400))
 
     query = db.select(Planet).where(Planet.id == planet_id)
