@@ -15,13 +15,17 @@ class Planet(db.Model):
 
     def to_dict(self):
         """Return dictionary representation of Planet object."""
-        return {
+        planet = {
             "id": self.id,
             "name": self.name,
             "description": self.description,
             "atmosphere": self.atmosphere,
-            "system": self.system if self.system else "undetermined",
         }
+
+        if self.system:
+            planet["system"] = self.system
+
+        return planet
 
 
     @classmethod
