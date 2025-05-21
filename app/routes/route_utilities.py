@@ -21,3 +21,8 @@ def validate_model(cls, model_id):
         abort(make_response(response, 404))
 
     return model
+
+
+def missing_attribute_error(missing):
+    response = {"message": f"Invalid request: missing {missing.args[0]}"}
+    abort(make_response(response, 400))

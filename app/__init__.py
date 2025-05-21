@@ -2,6 +2,7 @@ from flask import Flask
 from app.db import db, migrate
 from .models import planets, systems
 from .routes.planet_routes import bp as planets_bp
+from .routes.system_routes import bp as systems_bp
 import os
 
 
@@ -19,5 +20,6 @@ def create_app(config=None):
     migrate.init_app(app, db)
 
     app.register_blueprint(planets_bp)
+    app.register_blueprint(systems_bp)
 
     return app

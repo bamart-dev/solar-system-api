@@ -2,6 +2,7 @@ import pytest
 from app import create_app
 from app.db import db
 from app.models.planets import Planet
+from app.models.systems import System
 from flask.signals import request_finished
 from dotenv import load_dotenv
 import os
@@ -48,6 +49,44 @@ def create_two_planets(app):
     db.session.add_all([tatooine, coruscant])
     db.session.commit()
 
+
+@pytest.fixture
+def create_system(app):
+    system = System(
+        name="Solar System")
+
+    db.session.add(system)
+    db.session.commit()
+
+
+@pytest.fixture
+def create_two_systems(app):
+    solar = System(
+        name="Solar System")
+    ac = System(
+        name="Alpha Centauri")
+
+    db.session.add_all([solar, ac])
+    db.session.commit()
+
+
+@pytest.fixture
+def create_system_with_two_planets(app, create_system):
+    earth = Planet(
+        name="Earth",
+        description="Planet harboring human life",
+        atmosphere="Breathable to humans",
+        system_id=1
+    )
+    mars = Planet(
+        name="Mars",
+        description="Red planet",
+        atmosphere="Non-existant",
+        system_id=1
+    )
+
+    db.session.add_all([earth, mars])
+    db.session.commit()
 
 @pytest.fixture
 def replicate_development_db(app):

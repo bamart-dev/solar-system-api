@@ -1,6 +1,6 @@
 from flask import Blueprint, abort, make_response, request, Response
 from app.models.planets import Planet
-from .route_utilities import validate_model
+from .route_utilities import validate_model, missing_attribute_error
 from app.db import db
 
 
@@ -10,19 +10,16 @@ bp = Blueprint("planets_bp", __name__, url_prefix="/planets")
 @bp.post("")
 def create_planet():
     request_body = request.get_json()
-    new_planet = Planet.generate_planet(request_body)
+
+    try:
+        new_planet = Planet.generate_planet(request_body)
+    except KeyError as missing:
+        missing_attribute_error(missing)
 
     db.session.add(new_planet)
     db.session.commit()
 
-    message = {
-        "id": new_planet.id,
-        "name": new_planet.name,
-        "description": new_planet.description,
-        "atmosphere": new_planet.atmosphere,
-    }
-
-    return message, 201
+    return make_response(new_planet.to_dict(), 201)
 
 
 @bp.get("")
@@ -31,13 +28,11 @@ def get_all_planets():
 
     description_param = request.args.get("description")
     if description_param:
-        query = query.where(
-            Planet.description.ilike(f"%{description_param}%"))
+        query = query.where(Planet.description.ilike(f"%{description_param}%"))
 
     atmosphere_param = request.args.get("atmosphere")
     if atmosphere_param:
-        query = query.where(
-            Planet.atmosphere.ilike(f"%{atmosphere_param}%"))
+        query = query.where(Planet.atmosphere.ilike(f"%{atmosphere_param}%"))
 
     query = query.order_by(Planet.id)
     planets = db.session.scalars(query)
@@ -64,9 +59,13 @@ def update_planet(planet_id):
     planet = validate_model(Planet, planet_id)
     request_body = request.get_json()
 
-    planet.name = request_body["name"]
-    planet.description = request_body["description"]
-    planet.atmosphere = request_body["atmosphere"]
+    try:
+        planet.name = request_body["name"]
+        planet.description = request_body["description"]
+        planet.atmosphere = request_body["atmosphere"]
+    except KeyError as missing:
+        missing_attribute_error(missing)
+
     db.session.commit()
 
     return Response(status=204, mimetype="application/json")
