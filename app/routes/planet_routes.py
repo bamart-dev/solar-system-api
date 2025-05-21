@@ -1,7 +1,9 @@
 from flask import Blueprint, abort, make_response, request, Response
 from app.models.planets import Planet
-from .route_utilities import validate_model, missing_attribute_error
 from app.db import db
+from .route_utilities import (
+    validate_model, create_model,
+    get_model_with_filters, missing_attribute_error)
 
 
 bp = Blueprint("planets_bp", __name__, url_prefix="/planets")
@@ -11,41 +13,13 @@ bp = Blueprint("planets_bp", __name__, url_prefix="/planets")
 def create_planet():
     request_body = request.get_json()
 
-    try:
-        new_planet = Planet.generate_planet(request_body)
-    except KeyError as missing:
-        missing_attribute_error(missing)
-
-    db.session.add(new_planet)
-    db.session.commit()
-
-    return make_response(new_planet.to_dict(), 201)
+    return create_model(Planet, request_body)
 
 
 @bp.get("")
 def get_all_planets():
-    query = db.select(Planet)
 
-    description_param = request.args.get("description")
-    if description_param:
-        query = query.where(Planet.description.ilike(f"%{description_param}%"))
-
-    atmosphere_param = request.args.get("atmosphere")
-    if atmosphere_param:
-        query = query.where(Planet.atmosphere.ilike(f"%{atmosphere_param}%"))
-
-    query = query.order_by(Planet.id)
-    planets = db.session.scalars(query)
-
-    return [
-        {
-            "id": planet.id,
-            "name": planet.name,
-            "description": planet.description,
-            "atmosphere": planet.atmosphere,
-        }
-    for planet in planets]
-
+    return get_model_with_filters(Planet, request.args)
 
 @bp.get("/<planet_id>")
 def get_one_planet(planet_id):

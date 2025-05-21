@@ -29,7 +29,7 @@ class Planet(db.Model):
 
 
     @classmethod
-    def generate_planet(cls, planet_data):
+    def generate_from_dict(cls, planet_data):
 
         return cls(
             name = planet_data["name"],

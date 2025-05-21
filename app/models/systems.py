@@ -17,6 +17,6 @@ class System(db.Model):
 
 
     @classmethod
-    def generate_system(cls, system_data):
+    def generate_from_dict(cls, system_data):
 
         return cls(name = system_data["name"])

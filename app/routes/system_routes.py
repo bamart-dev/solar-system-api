@@ -2,7 +2,9 @@ from flask import Blueprint, request, make_response, abort, Response
 from app.models.planets import Planet
 from app.models.systems import System
 from app.db import db
-from .route_utilities import validate_model
+from .route_utilities import (
+    validate_model, create_model,
+    get_model_with_filters, missing_attribute_error)
 
 bp = Blueprint("systems_bp", __name__, url_prefix="/systems")
 
@@ -11,29 +13,13 @@ bp = Blueprint("systems_bp", __name__, url_prefix="/systems")
 def create_system():
     request_body = request.get_json()
 
-    try:
-        new_system = System.generate_system(request_body)
-    except KeyError as e:
-        response = {"message": f"Invalid request: missing {e.args[0]}"}
-        abort(make_response(response, 400))
-
-    db.session.add(new_system)
-    db.session.commit()
-
-    return make_response(new_system.to_dict(), 201)
+    return create_model(System, request_body)
 
 
 @bp.get("")
 def get_all_systems():
-    query = db.select(System)
 
-    sys_name_param = request.args.get("name")
-    if sys_name_param:
-        query = query.where(System.name.ilike(f"%{sys_name_param}%"))
-
-    systems = db.session.scalars(query.order_by(System.id))
-
-    return [system.to_dict() for system in systems]
+    return get_model_with_filters(System, request.args)
 
 
 @bp.get("/<system_id>")
@@ -50,9 +36,8 @@ def update_system(system_id):
 
     try:
         system.name = request_body["name"]
-    except KeyError as e:
-        response = {"message": f"Invalid request: missing {e.args[0]}"}
-        abort(make_response(response, 400))
+    except KeyError as missing:
+        missing_attribute_error(missing)
 
     db.session.commit()
 
